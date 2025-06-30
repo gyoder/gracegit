@@ -80,7 +80,7 @@ def change_branch(branch_name: Annotated[str, typer.Argument()] = ""):
     origin = repo.remote(name='origin')
     if branch_name == "":
         default_branch = origin.refs[repo.remote().repo.git.symbolic_ref('refs/remotes/origin/HEAD').split('/')[-1]]
-        branch_name = default_branch.name
+        branch_name = default_branch.name.split("/")[~0]
 
     branch = None
     remote_branch_name = f"origin/{branch_name}"
