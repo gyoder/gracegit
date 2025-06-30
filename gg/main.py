@@ -34,9 +34,10 @@ def app_version():
 
 def rs(branch_name) -> str: return f"{branch_name}:{branch_name}"
 
-@app.command("add-commit-push", short_help="Equivalant of running add, commit, and push with normal Git. Aliases: acp")
-@app.command("acp", short_help="alias for `add-commit-push`", hidden=True)
-def add_commit_push(commit_message: List[str]):
+
+@app.command("add-commit", short_help="Equivalant of running add and commit with normal Git. Aliases: ac")
+@app.command("ac", short_help="alias for `add-commit`", hidden=True)
+def add_commit(commit_message: List[str]):
     repo.git.add(all=True)
     console.print("Added Files")
     msg = ' '.join(commit_message)
@@ -44,12 +45,27 @@ def add_commit_push(commit_message: List[str]):
     console.print(f"Created commit {msg}")
     branch_name = repo.active_branch.name
 
+
+@app.command("add-commit-push", short_help="Equivalant of running add, commit, and push with normal Git. Aliases: acp")
+@app.command("acp", short_help="alias for `add-commit-push`", hidden=True)
+def add_commit_push(commit_message: List[str]):
+    repo.git.add(all=True)
+    console.print("Added Files")
+    msg = ' '.join(commit_message)
+    commit = repo.index.commit(msg)
+    console.print(f"Created commit {commit.hexsha[:7]}: {msg}")
+    branch_name = repo.active_branch.name
+
     try:
         with console.status("Pushing to Remote"):
 
             origin = repo.remote(name='origin')
             info_list = origin.push(refspec=rs(branch_name), set_upstream=True)
+
         console.print(f"Pushed to remote: {origin.url}")
+        if "github" in origin.url.lower():
+            commit_url = origin.url[:-4] + "/commit/" + commit.hexsha
+            console.print(f"view here: {commit_url}")
     except:
         # TODO: handle this?????
         console.print("No remote named origin found or failed to push")
@@ -86,6 +102,16 @@ def change_branch(branch_name: Annotated[str, typer.Argument()] = ""):
             console.print("Pulled")
         except:
             console.print("Unable to pull remote")
+
+@app.command("push", hidden=True)
+def push():
+    console.print("Uninplimented")
+    typer.Exit(5)
+
+@app.command("pull", hidden=True)
+def pull():
+    console.print("Uninplimented")
+    typer.Exit(5)
 
 @app.command("clone", hidden=True)
 def clone():
