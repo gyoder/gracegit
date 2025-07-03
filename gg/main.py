@@ -83,11 +83,9 @@ def change_branch(branch_name: Annotated[str, typer.Argument()] = ""):
         branch_name = default_branch.name.split("/")[~0]
 
     branch = None
-    remote_branch_name = f"origin/{branch_name}"
     if branch_name in repo.branches:
         branch = repo.branches[branch_name]
-    elif remote_branch_name in repo.remote().refs:
-        branch = repo.remote().refs[remote_branch_name]
+
 
     if branch == None:
         branch = repo.create_head(branch_name)
@@ -96,12 +94,12 @@ def change_branch(branch_name: Annotated[str, typer.Argument()] = ""):
     else:
         branch.checkout()
         console.print(f"Checked out {branch_name}")
-        try:
-            with console.status("Pulling Remote"):
-                origin.pull(refspec=branch_name.split("/")[~0])
-            console.print("Pulled")
-        except:
-            console.print("Unable to pull remote")
+    try:
+        with console.status("Pulling Remote"):
+            origin.pull(refspec=branch_name.split("/")[~0])
+        console.print("Pulled")
+    except:
+        console.print("Unable to pull remote")
 
 @app.command("push", hidden=True)
 def push():
